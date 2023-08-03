@@ -1,54 +1,41 @@
-<div align="center">
-  <h1 align="center"><a href="https://www.epicweb.dev/epic-stack">The Epic Stack 🚀</a></h1>
-  <strong align="center">
-    Ditch analysis paralysis and start shipping Epic Web apps.
-  </strong>
-  <p>
-    This is an opinionated project starter and reference that allows teams to
-    ship their ideas to production faster and on a more stable foundation based
-    on the experience of <a href="https://kentcdodds.com">Kent C. Dodds</a> and
-    <a href="https://github.com/epicweb-dev/epic-stack/graphs/contributors">contributors</a>.
-  </p>
-</div>
+# Epic Stack - Prisma with Mongodb example
 
-```sh
-npx create-remix@latest --typescript --install --template epicweb-dev/epic-stack
+This demonstrates how to use your Epic Stack application with Prisma as the database ORM and MongoDB as the database.
+
+1. Before starting the service, make sure you have Docker installed on your machine. Once you have Docker, create a `docker-compose.yml` file with the following content:
+
+```yml
+version: '3.7'
+
+services:
+  mongodb:
+    # This image automatically creates a replica set required for transactions
+    image: prismagraphql/mongo-single-replica:4.4.3-bionic
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: epicAdmin
+      MONGO_INITDB_ROOT_PASSWORD: kodylovesyou
+      INIT_WAIT_SEC: 3
+    ports:
+      - 27017:27017
 ```
 
-[![The Epic Stack](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/246885449-1b00286c-aa3d-44b2-9ef2-04f694eb3592.png)](https://www.epicweb.dev/epic-stack)
+2. Then, open a terminal window in the same directory as your docker-compose.yml file and run the following command to start the MongoDB service:
 
-[The Epic Stack](https://www.epicweb.dev/epic-stack)
+```bash
+docker-compose up -d
+```
 
-<hr />
+To check if the MongoDB service is running properly, you can execute the following command to see the running Docker containers:
 
-## Watch Kent's Introduction to The Epic Stack
+```bash
+docker ps
+```
 
-[![screenshot of a YouTube video](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/242088051-6beafa78-41c6-47e1-b999-08d3d3e5cb57.png)](https://www.youtube.com/watch?v=yMK5SVRASxM)
+3. To connect to the MongoDB container from the `docker-compose.yml` file using the provided credentials, you can define the DATABASE_URL environment variable in your `.env` file as follows:
 
-["The Epic Stack" by Kent C. Dodds at #RemixConf 2023 💿](https://www.youtube.com/watch?v=yMK5SVRASxM)
+```bash
+DATABASE_URL="mongodb://epicAdmin:kodylovesyou@localhost:27017/epicdb?authSource=admin"
+```
 
-## Docs
-
-[Read the docs](https://github.com/epicweb-dev/epic-stack/blob/main/docs)
-(please 🙏).
-
-## Support
-
-- 🆘 Join the
-  [discussion on GitHub](https://github.com/epicweb-dev/epic-stack/discussions)
-  and the [KCD Community on Discord](https://kcd.im/discord).
-- 💡 Create an
-  [idea discussion](https://github.com/epicweb-dev/epic-stack/discussions/new?category=ideas)
-  for suggestions.
-- 🐛 Open a [GitHub issue](https://github.com/epicweb-dev/epic-stack/issues) to
-  report a bug.
-
-## Branding
-
-Want to talk about the Epic Stack in a blog post or talk? Great! Here are some
-assets you can use in your material:
-[EpicWeb.dev/brand](https://epicweb.dev/brand)
-
-## Thanks
-
-You rock 🪨
+---
+NB: `npm run setup` and `npm run dev` for get started.
