@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -8,7 +8,7 @@ generator client {
 }
 
 model File {
-  id   String @id @unique @default(cuid())
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
   blob Bytes
 
   createdAt DateTime @default(now())
@@ -17,8 +17,9 @@ model File {
 }
 
 model Image {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
   file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  fileId String @unique
+  fileId String @unique @db.ObjectId
 
   contentType String
   altText     String?
@@ -30,28 +31,30 @@ model Image {
 }
 
 model Role {
-  id   String @id @unique @default(cuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
   name String @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users       User[]
-  permissions Permission[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  usersIds       String[]     @db.ObjectId
+  users          User[]       @relation(fields: [usersIds], references: [id])
+  permissionsIds String[]     @db.ObjectId
+  permissions    Permission[] @relation(fields: [permissionsIds], references: [id])
 }
 
 model Permission {
-  id   String @id @unique @default(cuid())
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  roles Role[]
+  rolesIds  String[] @db.ObjectId
+  roles     Role[]   @relation(fields: [rolesIds], references: [id])
 }
 
 model User {
-  id       String  @id @unique @default(cuid())
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   email    String  @unique
   username String  @unique
   name     String?
@@ -60,23 +63,26 @@ model User {
   updatedAt DateTime @updatedAt
 
   image   Image?  @relation(fields: [imageId], references: [fileId])
-  imageId String? @unique
+  imageId String? @unique @db.ObjectId
 
   password Password?
   notes    Note[]
-  roles    Role[]
+  rolesIds String[]  @db.ObjectId
+  roles    Role[]    @relation(fields: [rolesIds], references: [id])
   session  Session[]
 }
 
 model Password {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
   hash String
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+  userId String @unique @db.ObjectId
 }
 
 model Verification {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
 
   /// The type of verification, e.g. "email" or "phone"
@@ -104,22 +110,22 @@ model Verification {
 }
 
 model Session {
-  id             String   @id @default(cuid())
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt      DateTime @default(now())
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
+  userId         String   @db.ObjectId
   expirationDate DateTime
 }
 
 model Note {
-  id        String   @id @unique @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  ownerId String
+  ownerId String @db.ObjectId
 
   // our user search orders by recently owners who have recently updated notes
   // so indexing on the owner ID helps with that (a LOT).

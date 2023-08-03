@@ -2,7 +2,6 @@ import fs from 'fs'
 import { faker } from '@faker-js/faker'
 import { createPassword, createUser } from 'tests/db-utils.ts'
 import { prisma } from '~/utils/db.server.ts'
-import { deleteAllData } from 'tests/setup/utils.ts'
 import { getPasswordHash } from '~/utils/auth.server.ts'
 
 async function seed() {
@@ -10,7 +9,18 @@ async function seed() {
 	console.time(`🌱 Database has been seeded`)
 
 	console.time('🧹 Cleaned up the database...')
-	deleteAllData()
+	await prisma.note.deleteMany({where: {}})
+	await prisma.image.deleteMany({where: {}})
+	await prisma.file.deleteMany({where: {}})
+
+
+	await prisma.session.deleteMany({where: {}})
+	await prisma.verification.deleteMany({where: {}})
+	await prisma.password.deleteMany({where: {}})
+	await prisma.permission.deleteMany({where: {}})
+
+	await prisma.role.deleteMany({where: {}})
+	await prisma.user.deleteMany({where:{}})
 	console.timeEnd('🧹 Cleaned up the database...')
 
 	console.time(`👑 Created admin role/permission...`)

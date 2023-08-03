@@ -23,6 +23,7 @@ import { StatusButton } from '~/components/ui/status-button.tsx'
 import * as deleteImageRoute from '~/routes/resources+/delete-image.tsx'
 import { authenticator, requireUserId } from '~/utils/auth.server.ts'
 import { prisma } from '~/utils/db.server.ts'
+import { deleteIfPreviousImageExiste } from '~/utils/image.server.ts'
 import {
 	getUserImgSrc,
 	useDoubleCheck,
@@ -88,6 +89,8 @@ export async function action({ request }: DataFunctionArgs) {
 		select: { imageId: true },
 	})
 
+	await deleteIfPreviousImageExiste({ imageId: previousUserPhoto?.imageId })
+
 	await prisma.user.update({
 		select: { id: true },
 		where: { id: userId },
@@ -100,14 +103,6 @@ export async function action({ request }: DataFunctionArgs) {
 			},
 		},
 	})
-
-	if (previousUserPhoto?.imageId) {
-		void prisma.image
-			.delete({
-				where: { fileId: previousUserPhoto.imageId },
-			})
-			.catch(() => {}) // ignore the error, maybe it never existed?
-	}
 
 	return redirect('/settings/profile')
 }

@@ -35,33 +35,33 @@ export async function loader({ request }: DataFunctionArgs) {
 	const rawUsers = await time(
 		async () => {
 			if (searchTerm) {
-				return prisma.$queryRaw`
-					SELECT id, username, name, imageId
-					FROM user
-					WHERE username LIKE ${`%${searchTerm ?? ''}%`}
-					OR name LIKE ${`%${searchTerm ?? ''}%`}
-					ORDER BY (
-						SELECT updatedAt
-						FROM note
-						WHERE ownerId = user.id
-						ORDER BY updatedAt DESC
-						LIMIT 1
-					) DESC
-					LIMIT 50
-				`
+				return prisma.user.findMany({
+					where: {
+						OR: [
+							{ username: { contains: searchTerm ?? '', mode: 'insensitive' } },
+							{ name: { contains: searchTerm ?? '', mode: 'insensitive' } },
+						],
+					},
+					select: {
+						id: true,
+						username: true,
+						imageId: true,
+						name: true,
+					},
+					orderBy: [{ updatedAt: 'desc' }],
+					take: 50,
+				})
 			} else {
-				return await prisma.$queryRaw`
-					SELECT id, username, name, imageId
-					FROM user
-					ORDER BY (
-						SELECT updatedAt
-						FROM note
-						WHERE ownerId = user.id
-						ORDER BY updatedAt DESC
-						LIMIT 1
-					) DESC
-					LIMIT 50
-				`
+				return prisma.user.findMany({
+					select: {
+						id: true,
+						username: true,
+						imageId: true,
+						name: true,
+					},
+					orderBy: [{ updatedAt: 'desc' }],
+					take: 50,
+				})
 			}
 		},
 		{ timings, type: 'search users' },
